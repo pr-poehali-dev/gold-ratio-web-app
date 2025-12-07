@@ -109,10 +109,10 @@ const Index = () => {
       
       const squares = [];
       
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 20; i++) {
         const squareSize = Math.min(currentWidth, currentHeight);
         
-        if (squareSize < 5) break;
+        if (squareSize < 2) break;
         
         squares.push({ x, y, size: squareSize });
         
