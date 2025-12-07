@@ -21,7 +21,6 @@ const Index = () => {
   const [showSpiral, setShowSpiral] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -47,101 +46,7 @@ const Index = () => {
     calculateGoldenRatio(value);
   };
 
-  const drawGoldenSpiral = (baseSize?: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const width = canvas.width;
-    const height = canvas.height;
-    
-    ctx.clearRect(0, 0, width, height);
-
-    const scaleFactor = baseSize ? baseSize / 100 : 1;
-    const maxSize = Math.min(width, height) * 0.65 * scaleFactor;
-    
-    const squares = [];
-    let w = maxSize;
-    let x = width / 2 - maxSize / 2;
-    let y = height / 2 - maxSize / 2;
-    
-    for (let i = 0; i < 10; i++) {
-      squares.push({ x, y, w });
-      const nextW = w / PHI;
-      
-      switch (i % 4) {
-        case 0:
-          x = x + w - nextW;
-          y = y + w - nextW;
-          break;
-        case 1:
-          y = y + w - nextW;
-          break;
-        case 2:
-          break;
-        case 3:
-          x = x + w - nextW;
-          break;
-      }
-      w = nextW;
-    }
-
-    ctx.strokeStyle = '#E5E5E5';
-    ctx.lineWidth = 1.5;
-    squares.forEach(sq => {
-      ctx.strokeRect(sq.x, sq.y, sq.w, sq.w);
-    });
-
-    ctx.strokeStyle = '#D4AF37';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    
-    squares.forEach((sq, i) => {
-      const angle = (i % 4) * Math.PI / 2;
-      let cx, cy;
-      
-      switch (i % 4) {
-        case 0:
-          cx = sq.x;
-          cy = sq.y + sq.w;
-          break;
-        case 1:
-          cx = sq.x;
-          cy = sq.y;
-          break;
-        case 2:
-          cx = sq.x + sq.w;
-          cy = sq.y;
-          break;
-        case 3:
-          cx = sq.x + sq.w;
-          cy = sq.y + sq.w;
-          break;
-        default:
-          cx = sq.x;
-          cy = sq.y;
-      }
-      
-      ctx.arc(cx, cy, sq.w, angle, angle + Math.PI / 2, false);
-    });
-    
-    ctx.stroke();
-
-    ctx.font = '14px Roboto';
-    ctx.fillStyle = '#666';
-    ctx.textAlign = 'center';
-    ctx.fillText(`Размер: ${baseSize || 100} пикселей`, width / 2, height - 20);
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const num = parseFloat(inputValue) || 100;
-      drawGoldenSpiral(num);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [inputValue]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -326,8 +231,8 @@ const Index = () => {
     setIsDragging(false);
   };
 
-  const downloadCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, filename: string) => {
-    const canvas = canvasRef.current;
+  const downloadCanvas = () => {
+    const canvas = imageCanvasRef.current;
     if (!canvas) return;
 
     canvas.toBlob((blob) => {
@@ -335,7 +240,7 @@ const Index = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filename;
+      a.download = 'golden-grid-analysis.png';
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Изображение сохранено');
@@ -385,14 +290,10 @@ const Index = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <Tabs defaultValue="calculator" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="calculator" className="flex items-center gap-2">
               <Icon name="Calculator" size={18} />
               Калькулятор
-            </TabsTrigger>
-            <TabsTrigger value="visualization" className="flex items-center gap-2">
-              <Icon name="Sparkles" size={18} />
-              Визуализация
             </TabsTrigger>
             <TabsTrigger value="photo" className="flex items-center gap-2">
               <Icon name="Image" size={18} />
@@ -405,96 +306,74 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="calculator" className="space-y-6">
-            <Card className="p-8">
-              <div className="space-y-6">
-                <div>
-                  <h2 className="text-2xl font-semibold mb-2">Расчёт пропорций</h2>
-                  <p className="text-gray-600">Введите число — спираль автоматически изменит размер</p>
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="p-8">
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-2xl font-semibold mb-2">Расчёт пропорций</h2>
+                    <p className="text-gray-600">Введите число для расчёта золотого сечения</p>
+                  </div>
 
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Исходная величина</label>
+                      <Input
+                        type="number"
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        className="text-lg"
+                        placeholder="100"
+                        min="1"
+                      />
+                    </div>
+
+                    <div className="space-y-4 pt-6">
+                      <div className="p-6 bg-gray-50 rounded-lg">
+                        <div className="text-sm text-gray-600 mb-1">Меньшая величина</div>
+                        <div className="text-3xl font-bold font-mono">{results.smaller.toFixed(3)}</div>
+                        <div className="text-sm text-gray-500 mt-2">= {inputValue} ÷ φ</div>
+                      </div>
+
+                      <div className="p-6 rounded-lg" style={{ backgroundColor: '#D4AF37' }}>
+                        <div className="text-sm text-black mb-1">Большая величина</div>
+                        <div className="text-3xl font-bold text-black font-mono">{results.larger.toFixed(3)}</div>
+                        <div className="text-sm text-black/80 mt-2">= {inputValue} × φ</div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <div className="text-sm text-gray-600 space-y-2">
+                        <p><strong>Формула:</strong> a/b = (a+b)/a = φ ≈ 1.618</p>
+                        <p><strong>Применение:</strong> дизайн, архитектура, фотография, природа</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-8 bg-gradient-to-br from-amber-50 to-yellow-50">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Исходная величина (пиксели)</label>
-                    <Input
-                      type="number"
-                      value={inputValue}
-                      onChange={handleInputChange}
-                      className="text-lg"
-                      placeholder="100"
-                      min="10"
-                      max="500"
+                    <h2 className="text-2xl font-semibold mb-2">Золотая спираль</h2>
+                    <p className="text-gray-600">Визуализация пропорций Фибоначчи</p>
+                  </div>
+                  <div className="flex justify-center items-center">
+                    <img
+                      src="https://cdn.poehali.dev/files/IMG_0642.jpeg"
+                      alt="Золотая спираль Фибоначчи"
+                      className="w-full rounded-lg shadow-md"
                     />
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
-                    <div className="p-6 bg-gray-50 rounded-lg">
-                      <div className="text-sm text-gray-600 mb-1">Меньшая величина</div>
-                      <div className="text-3xl font-bold font-mono">{results.smaller.toFixed(3)}</div>
-                      <div className="text-sm text-gray-500 mt-2">= {inputValue} ÷ φ</div>
-                    </div>
-
-                    <div className="p-6 rounded-lg" style={{ backgroundColor: '#D4AF37' }}>
-                      <div className="text-sm text-black mb-1">Большая величина</div>
-                      <div className="text-3xl font-bold text-black font-mono">{results.larger.toFixed(3)}</div>
-                      <div className="text-sm text-black/80 mt-2">= {inputValue} × φ</div>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t">
-                    <div className="text-sm text-gray-600 space-y-2">
-                      <p><strong>Формула:</strong> a/b = (a+b)/a = φ ≈ 1.618</p>
-                      <p><strong>Применение:</strong> дизайн, архитектура, фотография, природа</p>
-                    </div>
+                  <div className="pt-4 border-t text-sm text-gray-600 space-y-2">
+                    <p><strong>Квадраты Фибоначчи:</strong> каждый квадрат в 1.618 раз больше предыдущего</p>
+                    <p><strong>Спираль:</strong> проходит через углы квадратов, образуя идеальную кривую</p>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
           </TabsContent>
 
-          <TabsContent value="visualization" className="space-y-6">
-            <Card className="p-8">
-              <div className="space-y-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-2xl font-semibold mb-2">Золотая спираль</h2>
-                    <p className="text-gray-600">Размер спирали зависит от числа в калькуляторе: {inputValue} пикселей</p>
-                  </div>
-                  <Button
-                    onClick={() => downloadCanvas(canvasRef, 'golden-spiral.png')}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Icon name="Download" size={18} />
-                    Сохранить
-                  </Button>
-                </div>
 
-                <div className="bg-white border-2 border-gray-200 rounded-lg p-4 flex justify-center">
-                  <canvas
-                    ref={canvasRef}
-                    width={700}
-                    height={500}
-                    className="max-w-full"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                  <div className="p-4 bg-gray-50 rounded">
-                    <div className="text-sm font-medium mb-1">Прямоугольники</div>
-                    <div className="text-xs text-gray-600">Каждый следующий = φ × предыдущий</div>
-                  </div>
-                  <div className="p-4 rounded" style={{ backgroundColor: '#D4AF37', color: '#000' }}>
-                    <div className="text-sm font-medium mb-1">Спираль</div>
-                    <div className="text-xs text-black/80">Дуги четверти окружности</div>
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded">
-                    <div className="text-sm font-medium mb-1">Пропорция</div>
-                    <div className="text-xs text-gray-600">1 : 1.618 : 2.618 : 4.236...</div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="photo" className="space-y-6">
             <Card className="p-8">
@@ -506,7 +385,7 @@ const Index = () => {
                   </div>
                   {uploadedImage && (
                     <Button
-                      onClick={() => downloadCanvas(imageCanvasRef, 'golden-grid-analysis.png')}
+                      onClick={downloadCanvas}
                       variant="outline"
                       className="flex items-center gap-2"
                     >
