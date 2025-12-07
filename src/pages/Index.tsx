@@ -18,7 +18,6 @@ const Index = () => {
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [showSpiral, setShowSpiral] = useState(true);
   const [showGrid, setShowGrid] = useState(true);
   
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -98,120 +97,49 @@ const Index = () => {
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(img, offsetX, offsetY, width, height);
 
-    if (showGrid || showSpiral) {
-      const rectWidth = width;
-      const rectHeight = height;
-      
-      const leftWidth = rectWidth / PHI;
-      const rightWidth = rectWidth - leftWidth;
-      
-      const topHeight = rectHeight / PHI;
-      const bottomHeight = rectHeight - topHeight;
-
-      ctx.strokeStyle = '#333333';
-      ctx.lineWidth = 1.5;
+    if (showGrid) {
+      ctx.strokeStyle = '#D4AF37';
+      ctx.lineWidth = 2;
       ctx.setLineDash([]);
 
-      if (showGrid) {
-        ctx.strokeRect(0, 0, rectWidth, rectHeight);
+      let currentWidth = width;
+      let currentHeight = height;
+      let x = 0;
+      let y = 0;
+      
+      const squares = [];
+      
+      for (let i = 0; i < 10; i++) {
+        const squareSize = Math.min(currentWidth, currentHeight);
         
-        ctx.beginPath();
-        ctx.moveTo(leftWidth, 0);
-        ctx.lineTo(leftWidth, rectHeight);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(0, topHeight);
-        ctx.lineTo(rectWidth, topHeight);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(leftWidth, topHeight);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(leftWidth, 0);
-        ctx.lineTo(rectWidth, topHeight);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(0, topHeight);
-        ctx.lineTo(leftWidth, rectHeight);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(leftWidth, topHeight);
-        ctx.lineTo(rectWidth, rectHeight);
-        ctx.stroke();
-
-        const smallSquareSize = Math.min(rightWidth, topHeight);
-        const smallX = leftWidth;
-        const smallY = 0;
+        if (squareSize < 5) break;
         
-        const innerSize = smallSquareSize / PHI;
-        const innerX = smallX + (smallSquareSize - innerSize);
-        const innerY = smallY;
-
-        ctx.strokeRect(smallX, smallY, smallSquareSize, smallSquareSize);
+        squares.push({ x, y, size: squareSize });
         
-        if (smallSquareSize > 40) {
-          ctx.strokeRect(innerX, innerY, innerSize, innerSize);
+        if (currentWidth >= currentHeight) {
+          x += squareSize;
+          currentWidth -= squareSize;
           
-          const tinySize = innerSize / PHI;
-          const tinyX = innerX;
-          const tinyY = innerY + (innerSize - tinySize);
+          if (currentHeight > currentWidth) {
+            const temp = currentWidth;
+            currentWidth = currentHeight;
+            currentHeight = temp;
+          }
+        } else {
+          y += squareSize;
+          currentHeight -= squareSize;
           
-          if (tinySize > 20) {
-            ctx.strokeRect(tinyX, tinyY, tinySize, tinySize);
+          if (currentWidth > currentHeight) {
+            const temp = currentWidth;
+            currentWidth = currentHeight;
+            currentHeight = temp;
           }
         }
       }
-
-      if (showSpiral) {
-        ctx.strokeStyle = '#D4AF37';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-
-        const arcs = [
-          { x: leftWidth, y: 0, r: leftWidth, start: Math.PI, end: Math.PI * 1.5 },
-          { x: leftWidth, y: topHeight, r: rightWidth, start: Math.PI * 1.5, end: Math.PI * 2 },
-          { x: 0, y: topHeight, r: bottomHeight, start: 0, end: Math.PI * 0.5 },
-          { x: leftWidth, y: topHeight, r: leftWidth, start: Math.PI * 0.5, end: Math.PI }
-        ];
-
-        const smallSquareSize = Math.min(rightWidth, topHeight);
-        const innerSize = smallSquareSize / PHI;
-        const innerX = leftWidth + (smallSquareSize - innerSize);
-        const innerY = 0;
-
-        arcs.push(
-          { x: innerX, y: 0, r: innerSize, start: Math.PI * 1.5, end: Math.PI * 2 }
-        );
-
-        if (innerSize > 40) {
-          const tinySize = innerSize / PHI;
-          const tinyX = innerX;
-          const tinyY = innerSize - tinySize;
-          
-          arcs.push(
-            { x: tinyX, y: tinyY, r: tinySize, start: 0, end: Math.PI * 0.5 }
-          );
-
-          if (tinySize > 20) {
-            const microSize = tinySize / PHI;
-            arcs.push(
-              { x: tinyX + tinySize - microSize, y: tinyY, r: microSize, start: Math.PI * 0.5, end: Math.PI }
-            );
-          }
-        }
-
-        arcs.forEach(arc => {
-          ctx.arc(arc.x, arc.y, arc.r, arc.start, arc.end, false);
-        });
-
-        ctx.stroke();
-      }
+      
+      squares.forEach(sq => {
+        ctx.strokeRect(sq.x, sq.y, sq.size, sq.size);
+      });
     }
   };
 
@@ -219,7 +147,7 @@ const Index = () => {
     if (imageObject) {
       drawImageWithOverlay(imageObject, imagePosition.x, imagePosition.y);
     }
-  }, [showSpiral, showGrid]);
+  }, [showGrid]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     setIsDragging(true);
@@ -428,22 +356,14 @@ const Index = () => {
                   </div>
 
                   {uploadedImage && (
-                    <div className="flex gap-6 items-center justify-center">
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          id="spiral-toggle"
-                          checked={showSpiral}
-                          onCheckedChange={setShowSpiral}
-                        />
-                        <Label htmlFor="spiral-toggle">Спираль</Label>
-                      </div>
+                    <div className="flex items-center justify-center">
                       <div className="flex items-center gap-2">
                         <Switch
                           id="grid-toggle"
                           checked={showGrid}
                           onCheckedChange={setShowGrid}
                         />
-                        <Label htmlFor="grid-toggle">Сетка</Label>
+                        <Label htmlFor="grid-toggle">Показать сетку квадратов Фибоначчи</Label>
                       </div>
                     </div>
                   )}
@@ -463,9 +383,9 @@ const Index = () => {
                 )}
 
                 <div className="pt-4 border-t text-sm text-gray-600 space-y-2">
-                  <p><strong>Линии сетки:</strong> размещайте ключевые элементы на пересечениях золотых линий</p>
-                  <p><strong>Спираль:</strong> показывает естественное направление взгляда по композиции</p>
-                  <p><strong>Управление:</strong> перетаскивайте фото мышкой для точной настройки композиции</p>
+                  <p><strong>Сетка Фибоначчи:</strong> квадраты построены по пропорциям золотого сечения</p>
+                  <p><strong>Управление:</strong> перетаскивайте фото мышкой для поиска удачной композиции</p>
+                  <p><strong>Совет:</strong> размещайте ключевые элементы на границах квадратов</p>
                 </div>
               </div>
             </Card>
