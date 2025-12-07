@@ -3,6 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import Icon from '@/components/ui/icon';
 import { toast } from 'sonner';
 
@@ -12,13 +14,20 @@ const Index = () => {
   const [inputValue, setInputValue] = useState('100');
   const [results, setResults] = useState({ smaller: 0, larger: 0 });
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [imageObject, setImageObject] = useState<HTMLImageElement | null>(null);
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showSpiral, setShowSpiral] = useState(true);
+  const [showGrid, setShowGrid] = useState(true);
+  
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageCanvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     calculateGoldenRatio(inputValue);
-  }, [inputValue]);
+  }, []);
 
   const calculateGoldenRatio = (value: string) => {
     const num = parseFloat(value);
@@ -38,7 +47,7 @@ const Index = () => {
     calculateGoldenRatio(value);
   };
 
-  const drawGoldenSpiral = () => {
+  const drawGoldenSpiral = (baseSize?: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -49,29 +58,32 @@ const Index = () => {
     const height = canvas.height;
     
     ctx.clearRect(0, 0, width, height);
-    ctx.strokeStyle = '#D4AF37';
-    ctx.lineWidth = 2;
 
-    let size = Math.min(width, height) * 0.8;
+    const scaleFactor = baseSize ? baseSize / 100 : 1;
+    let size = Math.min(width, height) * 0.7 * scaleFactor;
     let x = width / 2 - size / 2;
     let y = height / 2 - size / 2;
 
     ctx.strokeStyle = '#E5E5E5';
+    ctx.lineWidth = 1.5;
+    
+    const rectPositions = [];
     for (let i = 0; i < 8; i++) {
-      ctx.strokeRect(x, y, size, size / PHI);
+      const rectHeight = size / PHI;
+      ctx.strokeRect(x, y, size, rectHeight);
+      rectPositions.push({ x, y, size, rectHeight });
       
       const nextSize = size / PHI;
-      const temp = x;
-      x = x + size - nextSize;
-      y = y;
-      size = nextSize;
-
       if (i % 2 === 0) {
-        y = y + size;
+        x = x + size - nextSize;
+        y = y + rectHeight;
+      } else {
+        x = x + size - nextSize;
       }
+      size = nextSize;
     }
 
-    size = Math.min(width, height) * 0.8;
+    size = Math.min(width, height) * 0.7 * scaleFactor;
     x = width / 2 - size / 2;
     y = height / 2 - size / 2;
 
@@ -79,64 +91,71 @@ const Index = () => {
     ctx.lineWidth = 3;
     ctx.beginPath();
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 8; i++) {
+      const rectHeight = size / PHI;
       const radius = size / PHI;
       
       const startAngle = (i % 4) * Math.PI / 2;
       const endAngle = startAngle + Math.PI / 2;
 
       let centerX, centerY;
-      switch (i % 4) {
-        case 0:
-          centerX = x + size;
-          centerY = y + size / PHI;
-          break;
-        case 1:
-          centerX = x + size - radius;
-          centerY = y;
-          break;
-        case 2:
-          centerX = x;
-          centerY = y + radius;
-          break;
-        case 3:
-          centerX = x + radius;
-          centerY = y + size / PHI;
-          break;
-        default:
-          centerX = x;
-          centerY = y;
+      if (i % 2 === 0) {
+        switch (i % 4) {
+          case 0:
+            centerX = x + size;
+            centerY = y + rectHeight;
+            break;
+          case 2:
+            centerX = x;
+            centerY = y;
+            break;
+          default:
+            centerX = x + size;
+            centerY = y;
+        }
+      } else {
+        switch (i % 4) {
+          case 1:
+            centerX = x + size - radius;
+            centerY = y;
+            break;
+          case 3:
+            centerX = x + radius;
+            centerY = y + rectHeight;
+            break;
+          default:
+            centerX = x;
+            centerY = y;
+        }
       }
 
       ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
 
       const nextSize = size / PHI;
-      switch (i % 4) {
-        case 0:
-          x = x + size - nextSize;
-          break;
-        case 1:
-          y = y + size / PHI - nextSize;
-          break;
-        case 2:
-          x = x;
-          break;
-        case 3:
-          y = y + size / PHI;
-          break;
+      if (i % 2 === 0) {
+        x = x + size - nextSize;
+        y = y + rectHeight;
+      } else {
+        x = x + size - nextSize;
       }
       size = nextSize;
     }
 
     ctx.stroke();
+
+    ctx.font = '14px Roboto';
+    ctx.fillStyle = '#666';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Размер: ${baseSize || 100} пикселей`, width / 2, height - 20);
   };
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      drawGoldenSpiral();
+      const num = parseFloat(inputValue) || 100;
+      drawGoldenSpiral(num);
     }, 100);
     return () => clearTimeout(timer);
-  }, []);
+  }, [inputValue]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -152,22 +171,24 @@ const Index = () => {
       const img = new Image();
       img.onload = () => {
         setUploadedImage(event.target?.result as string);
-        drawImageWithGrid(img);
+        setImageObject(img);
+        setImagePosition({ x: 0, y: 0 });
+        drawImageWithOverlay(img, 0, 0);
       };
       img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
 
-  const drawImageWithGrid = (img: HTMLImageElement) => {
+  const drawImageWithOverlay = (img: HTMLImageElement, offsetX: number, offsetY: number) => {
     const canvas = imageCanvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const maxWidth = 800;
-    const maxHeight = 600;
+    const maxWidth = 900;
+    const maxHeight = 700;
     let width = img.width;
     let height = img.height;
 
@@ -183,33 +204,152 @@ const Index = () => {
     canvas.width = width;
     canvas.height = height;
 
-    ctx.drawImage(img, 0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(img, offsetX, offsetY, width, height);
 
-    ctx.strokeStyle = '#D4AF37';
-    ctx.lineWidth = 2;
+    if (showGrid) {
+      ctx.strokeStyle = '#D4AF37';
+      ctx.lineWidth = 2;
 
-    const goldenY = height / PHI;
-    const goldenX = width / PHI;
+      const goldenY = height / PHI;
+      const goldenX = width / PHI;
 
-    ctx.beginPath();
-    ctx.moveTo(0, goldenY);
-    ctx.lineTo(width, goldenY);
-    ctx.stroke();
+      ctx.setLineDash([5, 5]);
+      
+      ctx.beginPath();
+      ctx.moveTo(0, goldenY);
+      ctx.lineTo(width, goldenY);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(0, height - goldenY);
-    ctx.lineTo(width, height - goldenY);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, height - goldenY);
+      ctx.lineTo(width, height - goldenY);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(goldenX, 0);
-    ctx.lineTo(goldenX, height);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(goldenX, 0);
+      ctx.lineTo(goldenX, height);
+      ctx.stroke();
 
-    ctx.beginPath();
-    ctx.moveTo(width - goldenX, 0);
-    ctx.lineTo(width - goldenX, height);
-    ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(width - goldenX, 0);
+      ctx.lineTo(width - goldenX, height);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+    }
+
+    if (showSpiral) {
+      let size = Math.min(width, height) * 0.6;
+      let x = width / 2 - size / 2;
+      let y = height / 2 - size / 2;
+
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      
+      for (let i = 0; i < 8; i++) {
+        const rectHeight = size / PHI;
+        ctx.strokeRect(x, y, size, rectHeight);
+        
+        const nextSize = size / PHI;
+        if (i % 2 === 0) {
+          x = x + size - nextSize;
+          y = y + rectHeight;
+        } else {
+          x = x + size - nextSize;
+        }
+        size = nextSize;
+      }
+
+      size = Math.min(width, height) * 0.6;
+      x = width / 2 - size / 2;
+      y = height / 2 - size / 2;
+
+      ctx.strokeStyle = '#D4AF37';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+
+      for (let i = 0; i < 8; i++) {
+        const rectHeight = size / PHI;
+        const radius = size / PHI;
+        
+        const startAngle = (i % 4) * Math.PI / 2;
+        const endAngle = startAngle + Math.PI / 2;
+
+        let centerX, centerY;
+        if (i % 2 === 0) {
+          switch (i % 4) {
+            case 0:
+              centerX = x + size;
+              centerY = y + rectHeight;
+              break;
+            case 2:
+              centerX = x;
+              centerY = y;
+              break;
+            default:
+              centerX = x + size;
+              centerY = y;
+          }
+        } else {
+          switch (i % 4) {
+            case 1:
+              centerX = x + size - radius;
+              centerY = y;
+              break;
+            case 3:
+              centerX = x + radius;
+              centerY = y + rectHeight;
+              break;
+            default:
+              centerX = x;
+              centerY = y;
+          }
+        }
+
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
+
+        const nextSize = size / PHI;
+        if (i % 2 === 0) {
+          x = x + size - nextSize;
+          y = y + rectHeight;
+        } else {
+          x = x + size - nextSize;
+        }
+        size = nextSize;
+      }
+
+      ctx.stroke();
+    }
+  };
+
+  useEffect(() => {
+    if (imageObject) {
+      drawImageWithOverlay(imageObject, imagePosition.x, imagePosition.y);
+    }
+  }, [showSpiral, showGrid]);
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - imagePosition.x,
+      y: e.clientY - imagePosition.y
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!isDragging || !imageObject) return;
+
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+    
+    setImagePosition({ x: newX, y: newY });
+    drawImageWithOverlay(imageObject, newX, newY);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   const downloadCanvas = (canvasRef: React.RefObject<HTMLCanvasElement>, filename: string) => {
@@ -233,25 +373,25 @@ const Index = () => {
       title: 'Парфенон',
       description: 'Античная архитектура использует золотое сечение в пропорциях фасада',
       ratio: 'Высота к ширине = 1:φ',
-      image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=400&q=80'
+      image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=600&h=400&fit=crop'
     },
     {
       title: 'Мона Лиза',
       description: 'Леонардо да Винчи применял золотое сечение в композиции портрета',
       ratio: 'Лицо вписано в золотой прямоугольник',
-      image: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?w=400&q=80'
+      image: 'https://images.unsplash.com/photo-1549887534-1541e9326642?w=600&h=400&fit=crop'
     },
     {
       title: 'Раковина наутилуса',
       description: 'Природная спираль точно следует пропорциям золотого сечения',
       ratio: 'Каждый виток = φ × предыдущий',
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&q=80'
+      image: 'https://images.unsplash.com/photo-1582731133900-c19d60e83fe3?w=600&h=400&fit=crop'
     },
     {
       title: 'Подсолнух',
       description: 'Семена расположены по спирали Фибоначчи',
       ratio: 'Угол между семенами ≈ 137.5°',
-      image: 'https://images.unsplash.com/photo-1470509037663-253afd7f0f51?w=400&q=80'
+      image: 'https://images.unsplash.com/photo-1470509037663-253afd7f0f51?w=600&h=400&fit=crop'
     }
   ];
 
@@ -295,18 +435,20 @@ const Index = () => {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-semibold mb-2">Расчёт пропорций</h2>
-                  <p className="text-gray-600">Введите число, чтобы рассчитать золотые пропорции</p>
+                  <p className="text-gray-600">Введите число — спираль автоматически изменит размер</p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Исходная величина</label>
+                    <label className="block text-sm font-medium mb-2">Исходная величина (пиксели)</label>
                     <Input
                       type="number"
                       value={inputValue}
                       onChange={handleInputChange}
                       className="text-lg"
                       placeholder="100"
+                      min="10"
+                      max="500"
                     />
                   </div>
 
@@ -341,7 +483,7 @@ const Index = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className="text-2xl font-semibold mb-2">Золотая спираль</h2>
-                    <p className="text-gray-600">Визуализация золотого прямоугольника и спирали Фибоначчи</p>
+                    <p className="text-gray-600">Размер спирали зависит от числа в калькуляторе: {inputValue} пикселей</p>
                   </div>
                   <Button
                     onClick={() => downloadCanvas(canvasRef, 'golden-spiral.png')}
@@ -356,8 +498,8 @@ const Index = () => {
                 <div className="bg-white border-2 border-gray-200 rounded-lg p-4 flex justify-center">
                   <canvas
                     ref={canvasRef}
-                    width={600}
-                    height={400}
+                    width={700}
+                    height={500}
                     className="max-w-full"
                   />
                 </div>
@@ -386,7 +528,7 @@ const Index = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <h2 className="text-2xl font-semibold mb-2">Анализ композиции</h2>
-                    <p className="text-gray-600">Загрузите фото для наложения сетки золотого сечения</p>
+                    <p className="text-gray-600">Загрузите фото, двигайте его мышкой для точной композиции</p>
                   </div>
                   {uploadedImage && (
                     <Button
@@ -400,7 +542,7 @@ const Index = () => {
                   )}
                 </div>
 
-                <div className="flex justify-center">
+                <div className="flex gap-4 items-center justify-center flex-wrap">
                   <Button
                     onClick={() => fileInputRef.current?.click()}
                     size="lg"
@@ -409,6 +551,28 @@ const Index = () => {
                     <Icon name="Upload" size={20} />
                     Загрузить фото
                   </Button>
+                  
+                  {uploadedImage && (
+                    <div className="flex gap-6">
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="spiral-toggle"
+                          checked={showSpiral}
+                          onCheckedChange={setShowSpiral}
+                        />
+                        <Label htmlFor="spiral-toggle">Спираль</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          id="grid-toggle"
+                          checked={showGrid}
+                          onCheckedChange={setShowGrid}
+                        />
+                        <Label htmlFor="grid-toggle">Сетка</Label>
+                      </div>
+                    </div>
+                  )}
+                  
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -422,15 +586,19 @@ const Index = () => {
                   <div className="bg-gray-50 rounded-lg p-4 flex justify-center">
                     <canvas
                       ref={imageCanvasRef}
-                      className="max-w-full rounded shadow-lg"
+                      className="max-w-full rounded shadow-lg cursor-move"
+                      onMouseDown={handleMouseDown}
+                      onMouseMove={handleMouseMove}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseUp}
                     />
                   </div>
                 )}
 
                 <div className="pt-4 border-t text-sm text-gray-600 space-y-2">
-                  <p><strong>Линии сетки:</strong> размещайте ключевые элементы на пересечениях</p>
-                  <p><strong>Правило третей:</strong> упрощённая версия золотого сечения</p>
-                  <p><strong>Фокусные точки:</strong> глаз естественно притягивается к этим зонам</p>
+                  <p><strong>Линии сетки:</strong> размещайте ключевые элементы на пересечениях золотых линий</p>
+                  <p><strong>Спираль:</strong> показывает естественное направление взгляда по композиции</p>
+                  <p><strong>Управление:</strong> перетаскивайте фото мышкой для точной настройки композиции</p>
                 </div>
               </div>
             </Card>
@@ -450,6 +618,7 @@ const Index = () => {
                       src={example.image}
                       alt={example.title}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </div>
                   <div className="p-6 space-y-3">
