@@ -542,18 +542,28 @@ const Index = () => {
                   )}
                 </div>
 
-                <div className="flex gap-4 items-center justify-center flex-wrap">
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    size="lg"
-                    className="flex items-center gap-2"
-                  >
-                    <Icon name="Upload" size={20} />
-                    Загрузить фото
-                  </Button>
-                  
+                <div className="space-y-4">
+                  <div className="flex gap-4 items-center justify-center">
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      size="lg"
+                      className="flex items-center gap-2"
+                    >
+                      <Icon name="Upload" size={20} />
+                      Загрузить фото
+                    </Button>
+                    
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </div>
+
                   {uploadedImage && (
-                    <div className="flex gap-6">
+                    <div className="flex gap-6 items-center justify-center">
                       <div className="flex items-center gap-2">
                         <Switch
                           id="spiral-toggle"
@@ -572,14 +582,6 @@ const Index = () => {
                       </div>
                     </div>
                   )}
-                  
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
                 </div>
 
                 {uploadedImage && (
