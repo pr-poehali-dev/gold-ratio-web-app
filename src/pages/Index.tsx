@@ -270,7 +270,7 @@ const Index = () => {
       title: 'Мона Лиза',
       description: 'Леонардо да Винчи применял золотое сечение в композиции портрета',
       ratio: 'Лицо вписано в золотой прямоугольник',
-      image: 'https://picsum.photos/seed/monalisa/600/400'
+      image: 'https://cdn.poehali.dev/files/IMG_0643.jpeg'
     },
     {
       title: 'Раковина наутилуса',
