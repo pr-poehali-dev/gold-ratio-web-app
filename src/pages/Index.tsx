@@ -195,15 +195,15 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border/50 bg-gradient-to-r from-amber-50/50 to-yellow-50/30 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold text-black tracking-tight">Золотое сечение</h1>
-              <p className="text-gray-500 mt-2">φ = 1.618033988749...</p>
+              <h1 className="text-4xl font-bold text-foreground tracking-tight">Золотое сечение</h1>
+              <p className="text-muted-foreground mt-2 font-serif italic">φ = 1.618033988749...</p>
             </div>
-            <div className="text-6xl" style={{ color: '#D4AF37' }}>φ</div>
+            <div className="text-6xl font-serif" style={{ color: '#D4AF37' }}>φ</div>
           </div>
         </div>
       </header>
@@ -291,9 +291,22 @@ const Index = () => {
                 </div>
               </Card>
             </div>
+
+            <div className="mt-8 p-8 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-200/50 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-full opacity-5">
+                <div className="text-9xl font-serif text-amber-600 absolute -top-4 -left-4">"</div>
+                <div className="text-9xl font-serif text-amber-600 absolute -bottom-4 -right-4">"</div>
+              </div>
+              <div className="relative z-10">
+                <p className="text-lg text-center text-foreground/80 italic font-serif leading-relaxed">
+                  Геометрия владеет двумя сокровищами: одно из них — это теорема Пифагора, 
+                  а другое — деление отрезка в среднем и крайнем отношении... 
+                  Первое можно сравнить с мерой золота, второе же больше напоминает драгоценный камень.
+                </p>
+                <p className="text-center mt-4 text-sm text-amber-700 font-medium">— Иоганн Кеплер</p>
+              </div>
+            </div>
           </TabsContent>
-
-
 
           <TabsContent value="photo" className="space-y-6">
             <Card className="p-8">
@@ -372,9 +385,20 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="gallery" className="space-y-6">
+            <div className="p-8 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 rounded-lg border-2 border-amber-200/50 relative overflow-hidden mb-8">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-300/10 rounded-full blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-yellow-300/10 rounded-full blur-3xl"></div>
+              <div className="relative z-10">
+                <p className="text-lg text-center text-foreground/80 italic font-serif leading-relaxed">
+                  Математика — это язык, на котором написана книга природы
+                </p>
+                <p className="text-center mt-4 text-sm text-amber-700 font-medium">— Галилео Галилей</p>
+              </div>
+            </div>
+
             <div className="mb-8">
               <h2 className="text-2xl font-semibold mb-2">Примеры из искусства и природы</h2>
-              <p className="text-gray-600">Золотое сечение встречается в архитектуре, живописи и природных формах</p>
+              <p className="text-muted-foreground">Золотое сечение встречается в архитектуре, живописи и природных формах</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -401,12 +425,25 @@ const Index = () => {
               ))}
             </div>
 
-            <Card className="p-8 mt-8" style={{ backgroundColor: '#D4AF37' }}>
-              <div className="space-y-4 text-black">
+            <div className="mt-8 p-8 bg-gradient-to-l from-amber-50 to-yellow-50 rounded-lg border-2 border-amber-200/50 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-full opacity-5">
+                <div className="text-9xl font-serif text-amber-600 absolute -top-4 -left-4">"</div>
+                <div className="text-9xl font-serif text-amber-600 absolute -bottom-4 -right-4">"</div>
+              </div>
+              <div className="relative z-10">
+                <p className="text-lg text-center text-foreground/80 italic font-serif leading-relaxed">
+                  Природа говорит языком математики: буквы этого языка — круги, треугольники и иные математические фигуры
+                </p>
+                <p className="text-center mt-4 text-sm text-amber-700 font-medium">— Галилео Галилей</p>
+              </div>
+            </div>
+
+            <Card className="p-8 mt-8 bg-gradient-to-br from-amber-100 to-yellow-100 border-2 border-amber-300/50">
+              <div className="space-y-4 text-foreground">
                 <h3 className="text-xl font-semibold">Числа Фибоначчи</h3>
-                <p className="text-black/90">Последовательность: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144...</p>
-                <p className="text-black/90">Отношение соседних чисел стремится к φ:</p>
-                <div className="font-mono text-sm space-y-1 text-black/80">
+                <p className="text-foreground/90">Последовательность: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144...</p>
+                <p className="text-foreground/90">Отношение соседних чисел стремится к φ:</p>
+                <div className="font-mono text-sm space-y-1 text-foreground/80">
                   <div>5/3 = 1.666...</div>
                   <div>8/5 = 1.600</div>
                   <div>13/8 = 1.625</div>
@@ -419,10 +456,10 @@ const Index = () => {
         </Tabs>
       </main>
 
-      <footer className="border-t border-gray-200 mt-16">
+      <footer className="border-t border-border/50 bg-gradient-to-r from-amber-50/30 to-yellow-50/20 mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-sm text-gray-500">
-            <p>Золотое сечение — φ (фи) — математическая константа, равная приблизительно 1.618</p>
+          <div className="text-center text-sm text-muted-foreground">
+            <p className="font-serif italic">Золотое сечение — φ (фи) — математическая константа, равная приблизительно 1.618</p>
             <p className="mt-2">Используется в искусстве, архитектуре, дизайне и встречается в природе</p>
           </div>
         </div>
