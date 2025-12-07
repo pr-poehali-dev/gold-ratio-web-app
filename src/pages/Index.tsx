@@ -276,7 +276,7 @@ const Index = () => {
       title: 'Раковина наутилуса',
       description: 'Природная спираль точно следует пропорциям золотого сечения',
       ratio: 'Каждый виток = φ × предыдущий',
-      image: 'https://picsum.photos/seed/nautilus/600/400'
+      image: 'https://cdn.poehali.dev/files/IMG_0640.jpeg'
     },
     {
       title: 'Подсолнух',
