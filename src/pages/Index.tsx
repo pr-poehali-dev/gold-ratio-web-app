@@ -102,44 +102,24 @@ const Index = () => {
       ctx.lineWidth = 2;
       ctx.setLineDash([]);
 
-      let currentWidth = width;
-      let currentHeight = height;
-      let x = 0;
-      let y = 0;
-      
-      const squares = [];
-      
-      for (let i = 0; i < 20; i++) {
-        const squareSize = Math.min(currentWidth, currentHeight);
-        
-        if (squareSize < 2) break;
-        
-        squares.push({ x, y, size: squareSize });
-        
-        if (currentWidth >= currentHeight) {
-          x += squareSize;
-          currentWidth -= squareSize;
-          
-          if (currentHeight > currentWidth) {
-            const temp = currentWidth;
-            currentWidth = currentHeight;
-            currentHeight = temp;
-          }
-        } else {
-          y += squareSize;
-          currentHeight -= squareSize;
-          
-          if (currentWidth > currentHeight) {
-            const temp = currentWidth;
-            currentWidth = currentHeight;
-            currentHeight = temp;
-          }
-        }
+      const cols = 3;
+      const rows = 3;
+      const cellWidth = width / cols;
+      const cellHeight = height / rows;
+
+      for (let i = 1; i < cols; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * cellWidth, 0);
+        ctx.lineTo(i * cellWidth, height);
+        ctx.stroke();
       }
-      
-      squares.forEach(sq => {
-        ctx.strokeRect(sq.x, sq.y, sq.size, sq.size);
-      });
+
+      for (let i = 1; i < rows; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, i * cellHeight);
+        ctx.lineTo(width, i * cellHeight);
+        ctx.stroke();
+      }
     }
   };
 
@@ -363,7 +343,7 @@ const Index = () => {
                           checked={showGrid}
                           onCheckedChange={setShowGrid}
                         />
-                        <Label htmlFor="grid-toggle">Показать сетку квадратов Фибоначчи</Label>
+                        <Label htmlFor="grid-toggle">Показать сетку</Label>
                       </div>
                     </div>
                   )}
@@ -383,9 +363,9 @@ const Index = () => {
                 )}
 
                 <div className="pt-4 border-t text-sm text-gray-600 space-y-2">
-                  <p><strong>Сетка Фибоначчи:</strong> квадраты построены по пропорциям золотого сечения</p>
+                  <p><strong>Сетка 3×3:</strong> помогает выстроить композицию по правилу третей</p>
                   <p><strong>Управление:</strong> перетаскивайте фото мышкой для поиска удачной композиции</p>
-                  <p><strong>Совет:</strong> размещайте ключевые элементы на границах квадратов</p>
+                  <p><strong>Совет:</strong> размещайте ключевые элементы на пересечениях линий</p>
                 </div>
               </div>
             </Card>
