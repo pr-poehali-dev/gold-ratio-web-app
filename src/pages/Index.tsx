@@ -18,7 +18,7 @@ const Index = () => {
 
   useEffect(() => {
     calculateGoldenRatio(inputValue);
-  }, []);
+  }, [inputValue]);
 
   const calculateGoldenRatio = (value: string) => {
     const num = parseFloat(value);
@@ -132,7 +132,10 @@ const Index = () => {
   };
 
   useEffect(() => {
-    drawGoldenSpiral();
+    const timer = setTimeout(() => {
+      drawGoldenSpiral();
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
