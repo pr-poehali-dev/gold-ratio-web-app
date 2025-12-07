@@ -264,7 +264,7 @@ const Index = () => {
       title: 'Парфенон',
       description: 'Античная архитектура использует золотое сечение в пропорциях фасада',
       ratio: 'Высота к ширине = 1:φ',
-      image: 'https://picsum.photos/seed/parthenon/600/400'
+      image: 'https://cdn.poehali.dev/files/IMG_0638.jpeg'
     },
     {
       title: 'Мона Лиза',
