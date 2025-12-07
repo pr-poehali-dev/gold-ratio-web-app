@@ -98,108 +98,120 @@ const Index = () => {
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(img, offsetX, offsetY, width, height);
 
-    if (showGrid) {
-      ctx.strokeStyle = '#D4AF37';
-      ctx.lineWidth = 2;
-
-      const goldenY = height / PHI;
-      const goldenX = width / PHI;
-
-      ctx.setLineDash([5, 5]);
+    if (showGrid || showSpiral) {
+      const rectWidth = width;
+      const rectHeight = height;
       
-      ctx.beginPath();
-      ctx.moveTo(0, goldenY);
-      ctx.lineTo(width, goldenY);
-      ctx.stroke();
+      const leftWidth = rectWidth / PHI;
+      const rightWidth = rectWidth - leftWidth;
+      
+      const topHeight = rectHeight / PHI;
+      const bottomHeight = rectHeight - topHeight;
 
-      ctx.beginPath();
-      ctx.moveTo(0, height - goldenY);
-      ctx.lineTo(width, height - goldenY);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(goldenX, 0);
-      ctx.lineTo(goldenX, height);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(width - goldenX, 0);
-      ctx.lineTo(width - goldenX, height);
-      ctx.stroke();
-
+      ctx.strokeStyle = '#333333';
+      ctx.lineWidth = 1.5;
       ctx.setLineDash([]);
-    }
 
-    if (showSpiral) {
-      const maxSize = Math.min(width, height) * 0.5;
-      
-      const squares = [];
-      let w = maxSize;
-      let x = width / 2 - maxSize / 2;
-      let y = height / 2 - maxSize / 2;
-      
-      for (let i = 0; i < 9; i++) {
-        squares.push({ x, y, w });
-        const nextW = w / PHI;
+      if (showGrid) {
+        ctx.strokeRect(0, 0, rectWidth, rectHeight);
         
-        switch (i % 4) {
-          case 0:
-            x = x + w - nextW;
-            y = y + w - nextW;
-            break;
-          case 1:
-            y = y + w - nextW;
-            break;
-          case 2:
-            break;
-          case 3:
-            x = x + w - nextW;
-            break;
+        ctx.beginPath();
+        ctx.moveTo(leftWidth, 0);
+        ctx.lineTo(leftWidth, rectHeight);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, topHeight);
+        ctx.lineTo(rectWidth, topHeight);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(leftWidth, topHeight);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(leftWidth, 0);
+        ctx.lineTo(rectWidth, topHeight);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, topHeight);
+        ctx.lineTo(leftWidth, rectHeight);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(leftWidth, topHeight);
+        ctx.lineTo(rectWidth, rectHeight);
+        ctx.stroke();
+
+        const smallSquareSize = Math.min(rightWidth, topHeight);
+        const smallX = leftWidth;
+        const smallY = 0;
+        
+        const innerSize = smallSquareSize / PHI;
+        const innerX = smallX + (smallSquareSize - innerSize);
+        const innerY = smallY;
+
+        ctx.strokeRect(smallX, smallY, smallSquareSize, smallSquareSize);
+        
+        if (smallSquareSize > 40) {
+          ctx.strokeRect(innerX, innerY, innerSize, innerSize);
+          
+          const tinySize = innerSize / PHI;
+          const tinyX = innerX;
+          const tinyY = innerY + (innerSize - tinySize);
+          
+          if (tinySize > 20) {
+            ctx.strokeRect(tinyX, tinyY, tinySize, tinySize);
+          }
         }
-        w = nextW;
       }
 
-      ctx.strokeStyle = 'rgba(212, 175, 55, 0.25)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([]);
-      squares.forEach(sq => {
-        ctx.strokeRect(sq.x, sq.y, sq.w, sq.w);
-      });
+      if (showSpiral) {
+        ctx.strokeStyle = '#D4AF37';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
 
-      ctx.strokeStyle = '#D4AF37';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      
-      squares.forEach((sq, i) => {
-        const angle = (i % 4) * Math.PI / 2;
-        let cx, cy;
-        
-        switch (i % 4) {
-          case 0:
-            cx = sq.x;
-            cy = sq.y + sq.w;
-            break;
-          case 1:
-            cx = sq.x;
-            cy = sq.y;
-            break;
-          case 2:
-            cx = sq.x + sq.w;
-            cy = sq.y;
-            break;
-          case 3:
-            cx = sq.x + sq.w;
-            cy = sq.y + sq.w;
-            break;
-          default:
-            cx = sq.x;
-            cy = sq.y;
+        const arcs = [
+          { x: leftWidth, y: 0, r: leftWidth, start: Math.PI, end: Math.PI * 1.5 },
+          { x: leftWidth, y: topHeight, r: rightWidth, start: Math.PI * 1.5, end: Math.PI * 2 },
+          { x: 0, y: topHeight, r: bottomHeight, start: 0, end: Math.PI * 0.5 },
+          { x: leftWidth, y: topHeight, r: leftWidth, start: Math.PI * 0.5, end: Math.PI }
+        ];
+
+        const smallSquareSize = Math.min(rightWidth, topHeight);
+        const innerSize = smallSquareSize / PHI;
+        const innerX = leftWidth + (smallSquareSize - innerSize);
+        const innerY = 0;
+
+        arcs.push(
+          { x: innerX, y: 0, r: innerSize, start: Math.PI * 1.5, end: Math.PI * 2 }
+        );
+
+        if (innerSize > 40) {
+          const tinySize = innerSize / PHI;
+          const tinyX = innerX;
+          const tinyY = innerSize - tinySize;
+          
+          arcs.push(
+            { x: tinyX, y: tinyY, r: tinySize, start: 0, end: Math.PI * 0.5 }
+          );
+
+          if (tinySize > 20) {
+            const microSize = tinySize / PHI;
+            arcs.push(
+              { x: tinyX + tinySize - microSize, y: tinyY, r: microSize, start: Math.PI * 0.5, end: Math.PI }
+            );
+          }
         }
-        
-        ctx.arc(cx, cy, sq.w, angle, angle + Math.PI / 2, false);
-      });
-      
-      ctx.stroke();
+
+        arcs.forEach(arc => {
+          ctx.arc(arc.x, arc.y, arc.r, arc.start, arc.end, false);
+        });
+
+        ctx.stroke();
+      }
     }
   };
 
