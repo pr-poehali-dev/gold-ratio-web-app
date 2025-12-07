@@ -282,7 +282,7 @@ const Index = () => {
       title: 'Подсолнух',
       description: 'Семена расположены по спирали Фибоначчи',
       ratio: 'Угол между семенами ≈ 137.5°',
-      image: 'https://picsum.photos/seed/sunflower/600/400'
+      image: 'https://cdn.poehali.dev/files/IMG_0641.jpeg'
     }
   ];
 
