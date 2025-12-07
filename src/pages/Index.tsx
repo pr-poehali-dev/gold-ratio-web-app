@@ -60,87 +60,73 @@ const Index = () => {
     ctx.clearRect(0, 0, width, height);
 
     const scaleFactor = baseSize ? baseSize / 100 : 1;
-    let size = Math.min(width, height) * 0.7 * scaleFactor;
-    let x = width / 2 - size / 2;
-    let y = height / 2 - size / 2;
+    const maxSize = Math.min(width, height) * 0.65 * scaleFactor;
+    
+    const squares = [];
+    let w = maxSize;
+    let x = width / 2 - maxSize / 2;
+    let y = height / 2 - maxSize / 2;
+    
+    for (let i = 0; i < 10; i++) {
+      squares.push({ x, y, w });
+      const nextW = w / PHI;
+      
+      switch (i % 4) {
+        case 0:
+          x = x + w - nextW;
+          y = y + w - nextW;
+          break;
+        case 1:
+          y = y + w - nextW;
+          break;
+        case 2:
+          break;
+        case 3:
+          x = x + w - nextW;
+          break;
+      }
+      w = nextW;
+    }
 
     ctx.strokeStyle = '#E5E5E5';
     ctx.lineWidth = 1.5;
-    
-    const rectPositions = [];
-    for (let i = 0; i < 8; i++) {
-      const rectHeight = size / PHI;
-      ctx.strokeRect(x, y, size, rectHeight);
-      rectPositions.push({ x, y, size, rectHeight });
-      
-      const nextSize = size / PHI;
-      if (i % 2 === 0) {
-        x = x + size - nextSize;
-        y = y + rectHeight;
-      } else {
-        x = x + size - nextSize;
-      }
-      size = nextSize;
-    }
-
-    size = Math.min(width, height) * 0.7 * scaleFactor;
-    x = width / 2 - size / 2;
-    y = height / 2 - size / 2;
+    squares.forEach(sq => {
+      ctx.strokeRect(sq.x, sq.y, sq.w, sq.w);
+    });
 
     ctx.strokeStyle = '#D4AF37';
     ctx.lineWidth = 3;
     ctx.beginPath();
-
-    for (let i = 0; i < 8; i++) {
-      const rectHeight = size / PHI;
-      const radius = size / PHI;
+    
+    squares.forEach((sq, i) => {
+      const angle = (i % 4) * Math.PI / 2;
+      let cx, cy;
       
-      const startAngle = (i % 4) * Math.PI / 2;
-      const endAngle = startAngle + Math.PI / 2;
-
-      let centerX, centerY;
-      if (i % 2 === 0) {
-        switch (i % 4) {
-          case 0:
-            centerX = x + size;
-            centerY = y + rectHeight;
-            break;
-          case 2:
-            centerX = x;
-            centerY = y;
-            break;
-          default:
-            centerX = x + size;
-            centerY = y;
-        }
-      } else {
-        switch (i % 4) {
-          case 1:
-            centerX = x + size - radius;
-            centerY = y;
-            break;
-          case 3:
-            centerX = x + radius;
-            centerY = y + rectHeight;
-            break;
-          default:
-            centerX = x;
-            centerY = y;
-        }
+      switch (i % 4) {
+        case 0:
+          cx = sq.x;
+          cy = sq.y + sq.w;
+          break;
+        case 1:
+          cx = sq.x;
+          cy = sq.y;
+          break;
+        case 2:
+          cx = sq.x + sq.w;
+          cy = sq.y;
+          break;
+        case 3:
+          cx = sq.x + sq.w;
+          cy = sq.y + sq.w;
+          break;
+        default:
+          cx = sq.x;
+          cy = sq.y;
       }
-
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
-
-      const nextSize = size / PHI;
-      if (i % 2 === 0) {
-        x = x + size - nextSize;
-        y = y + rectHeight;
-      } else {
-        x = x + size - nextSize;
-      }
-      size = nextSize;
-    }
-
+      
+      ctx.arc(cx, cy, sq.w, angle, angle + Math.PI / 2, false);
+    });
+    
     ctx.stroke();
 
     ctx.font = '14px Roboto';
@@ -240,86 +226,74 @@ const Index = () => {
     }
 
     if (showSpiral) {
-      let size = Math.min(width, height) * 0.6;
-      let x = width / 2 - size / 2;
-      let y = height / 2 - size / 2;
-
-      ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([]);
+      const maxSize = Math.min(width, height) * 0.5;
       
-      for (let i = 0; i < 8; i++) {
-        const rectHeight = size / PHI;
-        ctx.strokeRect(x, y, size, rectHeight);
+      const squares = [];
+      let w = maxSize;
+      let x = width / 2 - maxSize / 2;
+      let y = height / 2 - maxSize / 2;
+      
+      for (let i = 0; i < 9; i++) {
+        squares.push({ x, y, w });
+        const nextW = w / PHI;
         
-        const nextSize = size / PHI;
-        if (i % 2 === 0) {
-          x = x + size - nextSize;
-          y = y + rectHeight;
-        } else {
-          x = x + size - nextSize;
+        switch (i % 4) {
+          case 0:
+            x = x + w - nextW;
+            y = y + w - nextW;
+            break;
+          case 1:
+            y = y + w - nextW;
+            break;
+          case 2:
+            break;
+          case 3:
+            x = x + w - nextW;
+            break;
         }
-        size = nextSize;
+        w = nextW;
       }
 
-      size = Math.min(width, height) * 0.6;
-      x = width / 2 - size / 2;
-      y = height / 2 - size / 2;
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      squares.forEach(sq => {
+        ctx.strokeRect(sq.x, sq.y, sq.w, sq.w);
+      });
 
       ctx.strokeStyle = '#D4AF37';
       ctx.lineWidth = 3;
       ctx.beginPath();
-
-      for (let i = 0; i < 8; i++) {
-        const rectHeight = size / PHI;
-        const radius = size / PHI;
+      
+      squares.forEach((sq, i) => {
+        const angle = (i % 4) * Math.PI / 2;
+        let cx, cy;
         
-        const startAngle = (i % 4) * Math.PI / 2;
-        const endAngle = startAngle + Math.PI / 2;
-
-        let centerX, centerY;
-        if (i % 2 === 0) {
-          switch (i % 4) {
-            case 0:
-              centerX = x + size;
-              centerY = y + rectHeight;
-              break;
-            case 2:
-              centerX = x;
-              centerY = y;
-              break;
-            default:
-              centerX = x + size;
-              centerY = y;
-          }
-        } else {
-          switch (i % 4) {
-            case 1:
-              centerX = x + size - radius;
-              centerY = y;
-              break;
-            case 3:
-              centerX = x + radius;
-              centerY = y + rectHeight;
-              break;
-            default:
-              centerX = x;
-              centerY = y;
-          }
+        switch (i % 4) {
+          case 0:
+            cx = sq.x;
+            cy = sq.y + sq.w;
+            break;
+          case 1:
+            cx = sq.x;
+            cy = sq.y;
+            break;
+          case 2:
+            cx = sq.x + sq.w;
+            cy = sq.y;
+            break;
+          case 3:
+            cx = sq.x + sq.w;
+            cy = sq.y + sq.w;
+            break;
+          default:
+            cx = sq.x;
+            cy = sq.y;
         }
-
-        ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
-
-        const nextSize = size / PHI;
-        if (i % 2 === 0) {
-          x = x + size - nextSize;
-          y = y + rectHeight;
-        } else {
-          x = x + size - nextSize;
-        }
-        size = nextSize;
-      }
-
+        
+        ctx.arc(cx, cy, sq.w, angle, angle + Math.PI / 2, false);
+      });
+      
       ctx.stroke();
     }
   };
@@ -373,25 +347,25 @@ const Index = () => {
       title: 'Парфенон',
       description: 'Античная архитектура использует золотое сечение в пропорциях фасада',
       ratio: 'Высота к ширине = 1:φ',
-      image: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=600&h=400&fit=crop'
+      image: 'https://picsum.photos/seed/parthenon/600/400'
     },
     {
       title: 'Мона Лиза',
       description: 'Леонардо да Винчи применял золотое сечение в композиции портрета',
       ratio: 'Лицо вписано в золотой прямоугольник',
-      image: 'https://images.unsplash.com/photo-1549887534-1541e9326642?w=600&h=400&fit=crop'
+      image: 'https://picsum.photos/seed/monalisa/600/400'
     },
     {
       title: 'Раковина наутилуса',
       description: 'Природная спираль точно следует пропорциям золотого сечения',
       ratio: 'Каждый виток = φ × предыдущий',
-      image: 'https://images.unsplash.com/photo-1582731133900-c19d60e83fe3?w=600&h=400&fit=crop'
+      image: 'https://picsum.photos/seed/nautilus/600/400'
     },
     {
       title: 'Подсолнух',
       description: 'Семена расположены по спирали Фибоначчи',
       ratio: 'Угол между семенами ≈ 137.5°',
-      image: 'https://images.unsplash.com/photo-1470509037663-253afd7f0f51?w=600&h=400&fit=crop'
+      image: 'https://picsum.photos/seed/sunflower/600/400'
     }
   ];
 
